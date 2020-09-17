@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HOT TWEET リサーチ</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <style>
+    .btn-submit, .btn-submit:active, .btn-submit:focus, .btn-submit:hover {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+      appearance: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid vh-100">
+    <div class="row">
+      <header class="col-12 d-flex align-items-center border-bottom mb-3" style="height:50px;background-color:rgb(250, 250, 250)">
+        <span class="text-secondary" style="font-size:30px">#</span>
+        <img src="/static/img/Twitter_Logo_Blue.png" style="width:42px;height:42px">
+        <h4 class="text-secondary mb-0">HOT TWEET リサーチ</h4>
+      </header>
+      <section class="col-12 mb-3">
+        <p>1週間内に投稿されたツイートの盛り上がり度をチェック！</p>
+        <form action="/" method="POST">
+          {{ form.csrf_token }}
+          <div class="col-7 px-0">
+            <div class="form-group position-relative">
+              <input type="text" name="search_word" class="form-control pl-5 font-weight-bold" value="{{form.search_word.data}}" placeholder="">
+              <button type="submit" class="btn-submit position-absolute" style="top:17%;left:1.5%">
+                <img src="/static/img/search.png" style="width:20px;height:20px">
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+      <section class="col-12">
+        <div class="d-flex align-items-center">
+          <h4 class="mb-2 mr-5"><span class="text-secondary font-weight-bold">#{{form.search_word.data}}</span>の盛り上がり度</h4>
+          <form action="/download" method="POST">
+            <input type="hidden" name="search_word" value="{{form.search_word.data}}">
+            <input type="hidden" name="total" value="{{total}}">
+            <input type="hidden" name="oneweek" value="{{oneweek}}">
+            <input type="hidden" name="counts" value="{{counts}}">
+            <button class="btn btn-primary rounded-pill">CSVダウンロード</button>
+          </form>
+        </div>
+        <div>
+          <canvas id="ch" style="width:1000px;height:500px;"></canvas>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+  <script type="text/javascript">
+    (function () {
+      createBarGraph();
+    }());
+
+    document.getElementById("download").onclick = function() {
+      document.searchTweet.action="/";
+      document.searchTweet.method="get";
+      document.searchTweet.submit();
+    };
+
+    function createBarGraph() {
+      const oneweek = {{oneweek|tojson}}
+      const counts = {{counts|tojson}}
+      var ctx = document.getElementById("ch").getContext("2d");
+      var chart = new Chart(ctx, {
+        type: "bar",
+        data:{
+          labels:oneweek,
+          datasets:[{
+            data:counts,
+            backgroundColor: ["#00acee","#00acee","#00acee","#00acee","#00acee","#00acee","#00acee"],
+            hoverBackgroundColor: ["#2f2f2f", "#2f2f2f", "#2f2f2f", "#2f2f2f", "#2f2f2f", "#2f2f2f", "#2f2f2f"],
+            categoryPercentage: 0.5
+          }]
+        },
+        options: {
+          responsive: false,
+          legend: {
+            display: false
+          },
+          scales: {
+            xAxes: [
+              {
+                gridLines: {
+                  display: false
+                },
+                ticks: {
+                  fontFamily: "Ruda, sans-serif",
+                  fontColor: "#797979",
+                  fontSize: 11
+                }
+              }
+            ],
+            yAxes: [
+              {
+                scaleLabel: {
+                  display: false
+                },
+                gridLines: {
+                  display: true,
+                  color: "#dbdce0",
+                  zeroLineColor: "#c9cdd7",
+                  borderDash: [3, 2],
+                  drawBorder: false
+                },
+                ticks: {
+                  fontFamily: "Ruda, sans-serif",
+                  fontColor: "#555555",
+                  fontSize: 11
+                }
+              }
+            ]
+          },
+          layout: {
+            padding: {
+              left: 0,
+              right: 0,
+              top: 20,
+              bottom: 0
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
